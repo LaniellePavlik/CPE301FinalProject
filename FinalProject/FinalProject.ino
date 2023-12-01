@@ -18,13 +18,23 @@ volatile unsigned int  *myUBRR0   = (unsigned int *) 0x00C4;
 volatile unsigned char *myUDR0    = (unsigned char *)0x00C6;
 
 //pin pointers:
-volatile unsigned char *portB     = (unsigned char *) 0x25;
-volatile unsigned char *portDDRB  = (unsigned char *) 0x24;
 
+//what's port A?
 volatile unsigned char *portA     = (unsigned char *) 0x22;
 volatile unsigned char *portDDRA  = (unsigned char *) 0x21;
 volatile unsigned char *pinA      = (unsigned char *) 0x20;
 
+//B4-7 = Status LEDs (10-13)
+volatile unsigned char *portB     = (unsigned char *) 0x25;
+volatile unsigned char *portDDRB  = (unsigned char *) 0x24;
+
+//E3 = LCD Register Select (5), E4-5 = Clock Module (using library)
+
+
+//G5 LCD Enable (4)
+
+
+//H3-6 = LCD Data Pins (6-9)
 
 /* States:
 0: Disabled
