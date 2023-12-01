@@ -42,6 +42,11 @@ volatile unsigned char *portE     = (unsigned char *) 0x2E;
 volatile unsigned char *portDDRE  = (unsigned char *) 0x2D;
 volatile unsigned char *pinE      = (unsigned char *) 0x2C;
 
+//F0 = Water Sensor (A0)
+volatile unsigned char *portF     = (unsigned char *) 0x31;
+volatile unsigned char *portDDRF  = (unsigned char *) 0x30;
+volatile unsigned char *pinF      = (unsigned char *) 0x2F;
+
 //G5 = LCD Enable (4)
 volatile unsigned char *portG     = (unsigned char *) 0x34;
 volatile unsigned char *portDDRG  = (unsigned char *) 0x33;
