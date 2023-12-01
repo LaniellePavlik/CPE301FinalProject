@@ -19,7 +19,7 @@ volatile unsigned char *myUDR0    = (unsigned char *)0x00C6;
 
 //pin pointers:
 
-//what's port A?
+//A0 = button (22)
 volatile unsigned char *portA     = (unsigned char *) 0x22;
 volatile unsigned char *portDDRA  = (unsigned char *) 0x21;
 volatile unsigned char *pinA      = (unsigned char *) 0x20;
@@ -28,13 +28,20 @@ volatile unsigned char *pinA      = (unsigned char *) 0x20;
 volatile unsigned char *portB     = (unsigned char *) 0x25;
 volatile unsigned char *portDDRB  = (unsigned char *) 0x24;
 
-//E3 = LCD Register Select (5), E4-5 = Clock Module (using library)
+//E3 = LCD Register Select (5), E5 = Temperature/Humididty (3)
+volatile unsigned char *portE     = (unsigned char *) 0x2E;
+volatile unsigned char *portDDRE  = (unsigned char *) 0x2D;
+volatile unsigned char *pinE      = (unsigned char *) 0x2C;
 
-
-//G5 LCD Enable (4)
-
+//G5 = LCD Enable (4)
+volatile unsigned char *portG     = (unsigned char *) 0x34;
+volatile unsigned char *portDDRG  = (unsigned char *) 0x33;
+volatile unsigned char *pinG      = (unsigned char *) 0x32;
 
 //H3-6 = LCD Data Pins (6-9)
+volatile unsigned char *portH     = (unsigned char *) 0x102;
+volatile unsigned char *portDDRH  = (unsigned char *) 0x101;
+volatile unsigned char *pinH      = (unsigned char *) 0x100;
 
 /* States:
 0: Disabled
