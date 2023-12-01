@@ -10,6 +10,15 @@ CPE 301 Final Project
 #define RDA 0x80
 #define TBE 0x20
 
+// Temperature setup
+dht DHT;
+#define DHT11_PIN 3
+#define TEMP_THRESHOLD 25
+
+// LCD setup
+const int RS=5, EN=4, D4=6, D5=7, D6=8, D7=9;
+LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
+
 //UART pointers:
 volatile unsigned char *myUCSR0A  = (unsigned char *)0x00C0;
 volatile unsigned char *myUCSR0B  = (unsigned char *)0x00C1;
@@ -56,28 +65,65 @@ void setup() {
 
   *portDDRA &= 0b11111110; // set PA0 to input
   *portB &= 0b11111110; // disable pullup on PA0
-  U0Init(9600);
+  //U0Init(9600);
+  Serial.begin(9600);
   state = 0;
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  Serial.print("State: ");
+  Serial.println(state);
   if(state == 0){
+    // Disabled
+    // update LEDS
     write_pb(7, 1);
     write_pb(6, 0);
     write_pb(5, 0);
     write_pb(4, 0);
   }else if (state == 1){
+    // Idle
+    // update LEDS
     write_pb(7, 0);
     write_pb(6, 1);
     write_pb(5, 0);
     write_pb(4, 0);
+    // Read temperature
+    int chk = DHT.read11(DHT11_PIN);
+
+    // serial library usage for testing
+    Serial.print("Temperature = ");
+    Serial.println(DHT.temperature);
+    Serial.print("Humidity = ");
+    Serial.println(DHT.humidity);
+
+    // Test for state transitions
+    // if temp > threshold, go to running
+    if(DHT.temperature > TEMP_THRESHOLD){
+      state = 2;
+    }
   }else if(state == 2){
+    // Running
+    // update LEDS
     write_pb(7, 0);
     write_pb(6, 0);
     write_pb(5, 1);
     write_pb(4, 0);
+    // Read temperature
+    int chk = DHT.read11(DHT11_PIN);
+
+    // serial library usage for testing
+    Serial.print("Temperature = ");
+    Serial.println(DHT.temperature);
+    Serial.print("Humidity = ");
+    Serial.println(DHT.humidity);
+    // if temp <= threshold, go to idle
+    if(DHT.temperature <= TEMP_THRESHOLD){
+      state = 1;
+    }
   }else if (state == 3){
+    // Error
+    // update LEDS
     write_pb(7, 0);
     write_pb(6, 0);
     write_pb(5, 0);
@@ -87,7 +133,7 @@ void loop() {
     state++;
     state = state % 4;
   }
-  delay(500);
+  delay(1000);
 }
 
 // UART functions
