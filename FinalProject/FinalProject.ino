@@ -53,14 +53,10 @@ volatile unsigned char *pinA      = (unsigned char *) 0x20;
 volatile unsigned char *portB     = (unsigned char *) 0x25;
 volatile unsigned char *portDDRB  = (unsigned char *) 0x24;
 
-<<<<<<< HEAD
-
-=======
 // C3 = vent up C7 = vent down
 volatile unsigned char *portC     = (unsigned char *) 0x28;
 volatile unsigned char *portDDRC  = (unsigned char *) 0x27;
 volatile unsigned char *pinC      = (unsigned char *) 0x26;
->>>>>>> af1d61cda103dc2661f7666d30afba4ab506bd3c
 
 //D2 = start button (19)
 volatile unsigned char *portD     = (unsigned char *) 0x2B;
