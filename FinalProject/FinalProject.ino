@@ -15,8 +15,11 @@ dht DHT;
 #define DHT11_PIN 3
 #define TEMP_THRESHOLD 25
 
+// Start button pin
+#define START_PIN 19
+
 //RTC module
-RTC_DS1307 rtc;
+RTC_DS1307 myrtc;
 
 // LCD setup
 const int RS=5, EN=4, D4=6, D5=7, D6=8, D7=9;
@@ -39,6 +42,11 @@ volatile unsigned char *pinA      = (unsigned char *) 0x20;
 //B4-7 = Status LEDs (10-13)
 volatile unsigned char *portB     = (unsigned char *) 0x25;
 volatile unsigned char *portDDRB  = (unsigned char *) 0x24;
+
+//D2 = start button (19)
+volatile unsigned char *portD     = (unsigned char *) 0x2B;
+volatile unsigned char *portDDRD  = (unsigned char *) 0x2A;
+volatile unsigned char *pinD      = (unsigned char *) 0x29;
 
 //E3 = LCD Register Select (5), E5 = Temperature/Humididty (3)
 volatile unsigned char *portE     = (unsigned char *) 0x2E;
@@ -66,7 +74,8 @@ volatile unsigned char *pinH      = (unsigned char *) 0x100;
 1: Idle
 2: Running
 3: Error */
-int state;
+int state, nextState;
+char stateNames[4][9] = {"Disabled", "Idle", "Running", "Error"};
 
 void setup() {
   *portDDRB |= 0b11110000; // set PB4-7 to output (LEDs)
@@ -74,20 +83,37 @@ void setup() {
 
   *portDDRA &= 0b11111110; // set PA0 to input
   *portB &= 0b11111110; // disable pullup on PA0
+
+  *portDDRD &= 0b00000100; // set PD2 to input
+  *portD &= 0b11111011; // disable pullup on PD2
   //U0Init(9600);
   Serial.begin(9600);
-  state = 0;
 
-   //CLOCK
-  if (! rtc.begin()) {
+  // Initialize states
+  state = 0;
+  nextState = 0;
+
+  // attach interrupt for start button
+  attachInterrupt(digitalPinToInterrupt(START_PIN), startButton, RISING);
+
+  //CLOCK
+  if (!myrtc.begin()) {
     Serial.println("Couldn't find RTC");
     Serial.flush();
-    while (1) delay_s(10);
+    while (1);
+  }
+  if(! myrtc.isrunning()){
+    Serial.println("RTC is NOT running!");
+    myrtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  if(state != nextState){
+    reportTransition();
+  }
+  state = nextState;
   Serial.print("State: ");
   Serial.println(state);
   if(state == 0){
@@ -116,7 +142,7 @@ void loop() {
     // Test for state transitions
     // if temp > threshold, go to running
     if(DHT.temperature > TEMP_THRESHOLD){
-      state = 2;
+      nextState = 2;
     }
   }else if(state == 2){
     // Running
@@ -135,7 +161,7 @@ void loop() {
     Serial.println(DHT.humidity);
     // if temp <= threshold, go to idle
     if(DHT.temperature <= TEMP_THRESHOLD){
-      state = 1;
+      nextState = 1;
     }
   }else if (state == 3){
     // Error
@@ -145,10 +171,12 @@ void loop() {
     write_pb(5, 0);
     write_pb(4, 1);
   }
+  /*
   if(*pinA & 0b00000001){
-    state++;
-    state = state % 4;
+    nextState = state + 1;
+    nextState = nextState % 4;
   }
+  */
   delay(1000);
 }
 
@@ -191,11 +219,44 @@ void write_pb(unsigned char pin_num, unsigned char state){
 
 //RTC to serial monitor
 void reportTransition(){
-  DateTime now = rtc.now();
-  char timeStr[9];// 8 characters + null terminator
-  sprintf(timeStr, "%02d:%02d:%02d", now.hour(), now.minute(), now.second());
-  for(int i = 0; i < 9; i++){
-    U0putChar(timeStr[i]);
+  DateTime now = myrtc.now();
+  /*
+  char timeStr[8];// 8 characters
+  timeStr[0] = 0x30 + (now.hour()/10)%10;
+  timeStr[1] = 0x30 + now.hour()%10;
+  timeStr[2] = ':';
+  timeStr[3] = 0x30 + (now.minute()/10)%10;
+  timeStr[4] = 0x30 + now.minute()%10;
+  timeStr[5] = ':';
+  timeStr[6] = 0x30 + (now.second()/10)%10;
+  timeStr[7] = 0x30 + now.second()%10; 
+  //sprintf(timeStr, "%02d:%02d:%02d", now.hour(), now.minute(), now.second());
+  for(int i = 0; i < 8; i++){
+    putChar(timeStr[i]);
   }
-  U0putChar('\n');
+  putChar('\n');
+  */
+  Serial.print("Transition from ");
+  Serial.print(stateNames[state]);
+  Serial.print(" to ");
+  Serial.print(stateNames[nextState]);
+  Serial.print(" at: ");
+  Serial.print(now.hour(), DEC);
+  Serial.print(':');
+  Serial.print(now.minute(), DEC);
+  Serial.print(':');
+  Serial.print(now.second(), DEC);
+  Serial.println();
 }
+
+// ISR for the start button;
+void startButton(){
+  // if state == Disabled
+  if(state == 0){
+    // Set state to Idle;
+    state = 1;
+    nextState = 1;
+  }
+}
+
+
