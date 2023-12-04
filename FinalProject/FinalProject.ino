@@ -15,6 +15,9 @@ dht DHT;
 #define DHT11_PIN 3
 #define TEMP_THRESHOLD 25
 
+//RTC module
+RTC_DS1307 rtc;
+
 // LCD setup
 const int RS=5, EN=4, D4=6, D5=7, D6=8, D7=9;
 LiquidCrystal lcd(RS, EN, D4, D5, D6, D7);
@@ -57,6 +60,7 @@ volatile unsigned char *portH     = (unsigned char *) 0x102;
 volatile unsigned char *portDDRH  = (unsigned char *) 0x101;
 volatile unsigned char *pinH      = (unsigned char *) 0x100;
 
+
 /* States:
 0: Disabled
 1: Idle
@@ -73,6 +77,13 @@ void setup() {
   //U0Init(9600);
   Serial.begin(9600);
   state = 0;
+
+   //CLOCK
+  if (! rtc.begin()) {
+    Serial.println("Couldn't find RTC");
+    Serial.flush();
+    while (1) delay_s(10);
+  }
 }
 
 void loop() {
@@ -176,4 +187,15 @@ void write_pb(unsigned char pin_num, unsigned char state){
   else{
     *portB |= 0x01 << pin_num;
   }
+}
+
+//RTC to serial monitor
+void reportTransition(){
+  DateTime now = rtc.now();
+  char timeStr[9];// 8 characters + null terminator
+  sprintf(timeStr, "%02d:%02d:%02d", now.hour(), now.minute(), now.second());
+  for(int i = 0; i < 9; i++){
+    U0putChar(timeStr[i]);
+  }
+  U0putChar('\n');
 }
