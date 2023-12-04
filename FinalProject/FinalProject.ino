@@ -43,6 +43,8 @@ volatile unsigned char *pinA      = (unsigned char *) 0x20;
 volatile unsigned char *portB     = (unsigned char *) 0x25;
 volatile unsigned char *portDDRB  = (unsigned char *) 0x24;
 
+
+
 //D2 = start button (19)
 volatile unsigned char *portD     = (unsigned char *) 0x2B;
 volatile unsigned char *portDDRD  = (unsigned char *) 0x2A;
