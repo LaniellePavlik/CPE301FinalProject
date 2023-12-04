@@ -157,7 +157,7 @@ void loop() {
     reportTransition();
     if(nextState == 2){
       reportFanOn();
-    }else{
+    }else if(state == 2){
       reportFanOff();
     }
   }
