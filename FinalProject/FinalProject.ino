@@ -14,7 +14,7 @@ CPE 301 Final Project
 // Temperature setup
 dht DHT;
 #define DHT11_PIN 3
-#define TEMP_THRESHOLD 25
+#define TEMP_THRESHOLD 24
 
 // Start/stop and reset button pins
 #define START_STOP_PIN 19
@@ -155,6 +155,11 @@ void loop() {
   // put your main code here, to run repeatedly:
   if(state != nextState){
     reportTransition();
+    if(nextState == 2){
+      reportFanOn();
+    }else{
+      reportFanOff();
+    }
   }
   state = nextState;
   if(state == 0){
@@ -374,6 +379,26 @@ void reportVentDown(){
   putChar('\n');
 }
 
+void reportFanOn(){
+  const char string1[] = "Fan turned on at time ";
+  for(int i =0; i < strlen(string1); i++ ) {
+    char c = string1[i];
+    putChar(c);
+  }
+  reportTime();
+  putChar('\n');
+}
+
+void reportFanOff(){
+  const char string1[] = "Fan turned off at time ";
+  for(int i =0; i < strlen(string1); i++ ) {
+    char c = string1[i];
+    putChar(c);
+  }
+  reportTime();
+  putChar('\n');
+}
+
 // ISR for the start button
 void startStopButton(){
   // if state == Disabled
@@ -473,5 +498,3 @@ void my_delay(unsigned int freq)
   // reset TOV           
   *myTIFR1 |= 0x01;
 }
-
-
